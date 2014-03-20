@@ -1,4 +1,5 @@
 import tornado.httpclient
+from bs4 import BeautifulSoup
 
 http_client = tornado.httpclient.HTTPClient()
 request = tornado.httpclient.HTTPRequest("https://test.bankid.com/Mobile", method='GET', validate_cert=0)
@@ -20,7 +21,7 @@ for i in kakor:
 
 print allakakor
 
-headers = tornado.httputil.HTTPHeaders({"Cookie": allakakor[0]+';'+allakakor[1]+';'+allakakor[2]+';'+allakakor[3]})
+headers = tornado.httputil.HTTPHeaders({"Cookie": allakakor[0]+';LanguageCookie=sv;'+allakakor[2]+';'+allakakor[3]})
 
 request = tornado.httpclient.HTTPRequest("https://test.bankid.com/Authentication/Step1", method='POST',headers =headers , body='CenturyBreak=2001&Personnummer=198303234655', validate_cert=0)
 http_client = tornado.httpclient.HTTPClient()
@@ -29,47 +30,43 @@ try:
 except tornado.httpclient.HTTPError as e:
     print "Error:", e
     
-print response.body
+html_doc = BeautifulSoup(response.body)
 http_client.close()
 
+orderRef =  "orderRef="+html_doc.find(id="orderRef")['value']
+reqtok =  "__RequestVerificationToken="+html_doc.find(id="nextStepForm").findChildren()[0]['value']
 
+print orderRef + reqtok
 headers = tornado.httputil.HTTPHeaders({"Cookie": allakakor[0]+';LanguageCookie=sv;'+allakakor[2]+';'+allakakor[3]})
 
-request = tornado.httpclient.HTTPRequest("https://test.bankid.com/Authentication/Step2RpCall", method='POST', body = " ", headers=headers, validate_cert=0)
+request = tornado.httpclient.HTTPRequest("https://test.bankid.com/Authentication/Step2RpCall", method='POST', body = orderRef, headers=headers, validate_cert=0)
 http_client = tornado.httpclient.HTTPClient()
 try:
     response = http_client.fetch(request)
 except tornado.httpclient.HTTPError as e:
     print "Error:", e
     
-print response.body
 http_client.close()
 
-exit()
+headers = tornado.httputil.HTTPHeaders({"Cookie": allakakor[0]+';;LanguageCookie=sv;'+allakakor[2]+';'+allakakor[3]})
 
-headers = tornado.httputil.HTTPHeaders({"Cookie": allakakor[0]+';'+allakakor[1]+';'+allakakor[2]+';'+allakakor[3]})
-
-request = tornado.httpclient.HTTPRequest("https://test.bankid.com/Authentication/Step3", method='GET',headers=headers, validate_cert=0)
+request = tornado.httpclient.HTTPRequest("https://test.bankid.com/Authentication/Step3", method='POST', body = orderRef +'&'+reqtok, headers=headers, validate_cert=0)
 http_client = tornado.httpclient.HTTPClient()
 try:
     response = http_client.fetch(request)
 except tornado.httpclient.HTTPError as e:
     print "Error:", e
-    
-print response.body
 http_client.close()
 
-request = tornado.httpclient.HTTPRequest("https://test.bankid.com/Authentication/Step3RpCall", method='GET',headers=headers, validate_cert=0)
+request = tornado.httpclient.HTTPRequest("https://test.bankid.com/Authentication/Step3RpCall", method='POST',body = orderRef, headers=headers, validate_cert=0)
 http_client = tornado.httpclient.HTTPClient()
 try:
     response = http_client.fetch(request)
 except tornado.httpclient.HTTPError as e:
     print "Error:", e
-    
-print response.body
 http_client.close()
 
-request = tornado.httpclient.HTTPRequest("https://test.bankid.com/Authentication/Step4", method='GET',headers=headers, validate_cert=0)
+request = tornado.httpclient.HTTPRequest("https://test.bankid.com/Authentication/Step4", method='POST',body = orderRef, headers=headers, validate_cert=0)
 http_client = tornado.httpclient.HTTPClient()
 try:
     response = http_client.fetch(request)
