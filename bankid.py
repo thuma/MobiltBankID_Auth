@@ -45,7 +45,7 @@ print 'Sök startad -> order ref hämtad -> Väntar'
 print orderRef + reqtok
 headers = tornado.httputil.HTTPHeaders({"Cookie": allakakor[0]+';LanguageCookie=sv;'+allakakor[2]+';'+allakakor[3]})
 
-request = tornado.httpclient.HTTPRequest("https://test.bankid.com/Authentication/Step2RpCall", method='POST', body = orderRef, headers=headers, validate_cert=0)
+request = tornado.httpclient.HTTPRequest("https://test.bankid.com/Authentication/Step2RpCall", method='POST', body = orderRef, headers=headers, validate_cert=0,request_timeout=150)
 http_client = tornado.httpclient.HTTPClient()
 try:
     response = http_client.fetch(request)
@@ -56,7 +56,7 @@ http_client.close()
 
 print 'Användaren inloggad'
 
-headers = tornado.httputil.HTTPHeaders({"Cookie": allakakor[0]+';;LanguageCookie=sv;'+allakakor[2]+';'+allakakor[3]})
+headers = tornado.httputil.HTTPHeaders({"Cookie": allakakor[0]+';LanguageCookie=sv;'+allakakor[2]+';'+allakakor[3]})
 
 request = tornado.httpclient.HTTPRequest("https://test.bankid.com/Authentication/Step3", method='POST', body = orderRef +'&'+reqtok, headers=headers, validate_cert=0)
 http_client = tornado.httpclient.HTTPClient()
@@ -68,7 +68,7 @@ http_client.close()
 
 print 'Användaren autentiserar'
 
-request = tornado.httpclient.HTTPRequest("https://test.bankid.com/Authentication/Step3RpCall", method='POST',body = orderRef, headers=headers, validate_cert=0)
+request = tornado.httpclient.HTTPRequest("https://test.bankid.com/Authentication/Step3RpCall", method='POST',body = orderRef, headers=headers, validate_cert=0,request_timeout=150)
 http_client = tornado.httpclient.HTTPClient()
 try:
     response = http_client.fetch(request)
